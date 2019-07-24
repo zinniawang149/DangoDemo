@@ -31,7 +31,6 @@ namespace DangoAPI.Controllers
         public async Task<IActionResult> GetValue(int id)
         {
             Models.Value value = await _context.Values.FirstOrDefaultAsync(x => x.Id == id);
-            //h~~~~i
             return Ok(value);
         }
 
