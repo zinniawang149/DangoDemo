@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using DangoAPI.Data;
+using DangoAPI.Dtos;
 using DangoAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DangoAPI.Controllers
 {
@@ -13,21 +19,55 @@ namespace DangoAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthRepository _repo;
+        private readonly IConfiguration _config;
 
-        public AuthController(IAuthRepository repo)
+        public AuthController(IAuthRepository repo, IConfiguration config)
         {
             _repo = repo;
+            _config = config;
         }
 
-        public async Task<IActionResult> Register(string username, string password) {
-            //validate request
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto) {
+            //validate request -- Only use it if there is no [ApiController] tag, and add [FromBody] tag in front of UserForRegisterDto
+            //if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            username = username.ToLower();
-            if (await _repo.UserExists(username)) return BadRequest("Username already exists.");
+            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
+            if (await _repo.UserExists(userForRegisterDto.Username)) return BadRequest("Username already exists.");
             User userToCreate = new User();
-            userToCreate.Username = username;
-            await _repo.Register(userToCreate, password);
+            userToCreate.Username = userForRegisterDto.Username;
+            await _repo.Register(userToCreate, userForRegisterDto.Password);
             return StatusCode(201);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
+        {
+            User userFromRepo = await _repo.Login(userForLoginDto.Username.ToLower(), userForLoginDto.Password);
+
+            if (userFromRepo == null) return Unauthorized();
+
+            Claim[] claims = new[] {
+                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
+                new Claim(ClaimTypes.Name, userFromRepo.Username)
+            };
+
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
+
+            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
+            } ;
+
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return Ok(new { token = tokenHandler.WriteToken(token)});
+           
         }
 
     }
