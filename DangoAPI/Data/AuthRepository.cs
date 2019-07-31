@@ -18,7 +18,7 @@ namespace DangoAPI.Data
         public async Task<User> Login(string username, string password)
         {
             User user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
-            if (username == null) return null;
+            if (user == null) return null;
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt)) return null;
 
             return user;
