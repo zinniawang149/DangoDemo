@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DangoAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20190805064905_ExtendedUserClass")]
+    [Migration("20190806041049_ExtendedUserClass")]
     partial class ExtendedUserClass
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,7 +53,7 @@ namespace DangoAPI.Migrations
 
                     b.Property<DateTime>("DateOfBirth");
 
-                    b.Property<string>("Genger");
+                    b.Property<string>("Gender");
 
                     b.Property<string>("Interests");
 

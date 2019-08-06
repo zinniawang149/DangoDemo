@@ -51,7 +51,7 @@ namespace DangoAPI.Migrations
 
                     b.Property<DateTime>("DateOfBirth");
 
-                    b.Property<string>("Genger");
+                    b.Property<string>("Gender");
 
                     b.Property<string>("Interests");
 

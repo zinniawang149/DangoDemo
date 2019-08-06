@@ -30,7 +30,7 @@ namespace DangoAPI.Migrations
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.AddColumn<string>(
-                name: "Genger",
+                name: "Gender",
                 table: "Users",
                 nullable: true);
 
@@ -111,7 +111,7 @@ namespace DangoAPI.Migrations
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "Genger",
+                name: "Gender",
                 table: "Users");
 
             migrationBuilder.DropColumn(
