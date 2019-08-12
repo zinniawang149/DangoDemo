@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace DangoAPI.Models
+namespace DangoAPI.Dtos
 {
-    public class Photo
+    public class PhotosForReturnDto
     {
         public int Id { get; set; }
         public string Url { get; set; }
@@ -10,7 +13,5 @@ namespace DangoAPI.Models
         public DateTime DateAdded { get; set; }
         public bool IsMain { get; set; }
         public string PublicId { get; set; }
-        public User User { get; set; }
-        public int UserId { get; set; }
     }
 }

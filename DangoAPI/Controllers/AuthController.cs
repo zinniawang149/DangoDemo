@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using DangoAPI.Data;
 using DangoAPI.Dtos;
 using DangoAPI.Models;
@@ -20,15 +21,18 @@ namespace DangoAPI.Controllers
     {
         private readonly IAuthRepository _repo;
         private readonly IConfiguration _config;
+        private readonly IMapper _mapper;
 
-        public AuthController(IAuthRepository repo, IConfiguration config)
+        public AuthController(IAuthRepository repo, IConfiguration config, IMapper mapper)
         {
             _repo = repo;
             _config = config;
+            _mapper = mapper;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto) {
+        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
+        {
             //validate request -- Only use it if there is no [ApiController] tag, and add [FromBody] tag in front of UserForRegisterDto
             //if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -61,13 +65,19 @@ namespace DangoAPI.Controllers
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
-            } ;
+            };
 
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new { token = tokenHandler.WriteToken(token)});
-           
+            UserForListDto user = _mapper.Map<UserForListDto>(userFromRepo);
+            return Ok(new
+            {
+                token = tokenHandler.WriteToken(token),
+                user
+            }
+            );
+
         }
 
     }

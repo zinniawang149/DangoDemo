@@ -25,6 +25,9 @@ namespace DangoAPI.Helpers
                 opt.ResolveUsing(d => d.DateOfBirth.CalculateAge());
             }); 
             CreateMap<Photo, PhotosForDetailedDto>();
+            CreateMap<UserForUpdateDto, User>(); //From Angular(Source)->API(Target)
+            CreateMap<Photo, PhotosForReturnDto>();
+            CreateMap<PhotoForCreationDto, Photo>();
         }
     }
 }
