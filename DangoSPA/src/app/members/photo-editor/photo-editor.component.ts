@@ -40,25 +40,25 @@ export class PhotoEditorComponent implements OnInit {
     });
 
     this.uploader.onAfterAddingFile = (file) => { file.withCredentials = false; };
-    this.uploader.onSuccessItem = (item, response, status, headers) => {
-      if (response) {
-        const res: Photo = JSON.parse(response);
-        const photo = {
-          id: res.id,
-          url: res.url,
-          dateAdded: res.dateAdded,
-          description: res.description,
-          isMain: res.isMain
-        };
-        this.photos.push(photo);
-        if (photo.isMain) {
-          this.authService.changeMainPhoto(photo.url);
-          this.authService.currentUser.photoUrl = photo.url;
-          localStorage.setItem('user', JSON.stringify(this.authService.currentUser));
-        }
-      }
-    }
-    //this.uploader.onSuccessItem = this.onSuccessItem;
+    //this.uploader.onSuccessItem = (item, response, status, headers) => {
+    //  if (response) {
+    //    const res: Photo = JSON.parse(response);
+    //    const photo = {
+    //      id: res.id,
+    //      url: res.url,
+    //      dateAdded: res.dateAdded,
+    //      description: res.description,
+    //      isMain: res.isMain
+    //    };
+    //    this.photos.push(photo);
+    //    if (photo.isMain) {
+    //      this.authService.changeMainPhoto(photo.url);
+    //      this.authService.currentUser.photoUrl = photo.url;
+    //      localStorage.setItem('user', JSON.stringify(this.authService.currentUser));
+    //    }
+    //  }
+    //}
+    this.uploader.onSuccessItem = this.onSuccessItem;
   };
 
   setMainPhoto(photo: Photo) {
@@ -72,7 +72,7 @@ export class PhotoEditorComponent implements OnInit {
       //this.getMemberPhotoChange.emit(photo.url);
     }, error => {
       this.alertify.error(error);
-      })
+    })
   }
 
   deletePhoto(id: number) {
@@ -81,22 +81,27 @@ export class PhotoEditorComponent implements OnInit {
         this.photos.splice(this.photos.findIndex(p => p.id === id), 1);
         this.alertify.success('Photo has been deleted');
       }, errpr => {
-          this.alertify.error('Failed to delete the photo');
-        });
+        this.alertify.error('Failed to delete the photo');
+      });
     });
   }
 
-  //onSuccessItem(item, response, status, headers): any {
-  //  if (response) {
-  //    const res: Photo = JSON.parse(response);
-  //    const photo = {
-  //      id: res.id,
-  //      url: res.url,
-  //      dateAdded: res.dateAdded,
-  //      description: res.description,
-  //      isMain: res.isMain
-  //    };
-  //    this.photos.push(photo);
-  //  }
-  //};
+  onSuccessItem(item, response, status, headers): any {
+    if (response) {
+      const res: Photo = JSON.parse(response);
+      const photo = {
+        id: res.id,
+        url: res.url,
+        dateAdded: res.dateAdded,
+        description: res.description,
+        isMain: res.isMain
+      };
+      this.photos.push(photo);
+      if (photo.isMain) {
+        this.authService.changeMainPhoto(photo.url);
+        this.authService.currentUser.photoUrl = photo.url;
+        localStorage.setItem('user', JSON.stringify(this.authService.currentUser));
+      }
+    }
+  };
 }
