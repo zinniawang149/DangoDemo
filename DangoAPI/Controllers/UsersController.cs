@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DangoAPI.Data;
 using DangoAPI.Dtos;
+using DangoAPI.Helpers;
 using DangoAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DangoAPI.Controllers
 {
+    [ServiceFilter(typeof(LogUserActivity))]
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]

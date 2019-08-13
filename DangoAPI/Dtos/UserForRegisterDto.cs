@@ -29,7 +29,7 @@ namespace DangoAPI.Dtos
         public UserForRegisterDto()
         {
             Created = DateTime.Now;
-            Created = DateTime.Now;
+            LastActive = DateTime.Now;
         }
     }
 }
