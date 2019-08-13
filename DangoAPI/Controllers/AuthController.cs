@@ -38,10 +38,13 @@ namespace DangoAPI.Controllers
 
             userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
             if (await _repo.UserExists(userForRegisterDto.Username)) return BadRequest("Username already exists.");
-            User userToCreate = new User();
-            userToCreate.Username = userForRegisterDto.Username;
-            await _repo.Register(userToCreate, userForRegisterDto.Password);
-            return StatusCode(201);
+            User userToCreate = _mapper.Map<User>(userForRegisterDto);
+            
+            User createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
+
+            UserForDetailedDto userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+
+            return CreatedAtRoute("GetUser", new { controller = "Users", id = createdUser.Id }, userToReturn);
         }
 
         [HttpPost("login")]

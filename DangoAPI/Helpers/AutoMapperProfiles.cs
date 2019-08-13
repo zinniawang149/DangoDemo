@@ -28,6 +28,7 @@ namespace DangoAPI.Helpers
             CreateMap<UserForUpdateDto, User>(); //From Angular(Source)->API(Target)
             CreateMap<Photo, PhotosForReturnDto>();
             CreateMap<PhotoForCreationDto, Photo>();
+            CreateMap<UserForRegisterDto, User>();
         }
     }
 }
