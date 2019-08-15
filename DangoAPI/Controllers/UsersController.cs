@@ -30,9 +30,22 @@ namespace DangoAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers() {
-            IEnumerable<User> users = await _repo.GetUsers();
+        public async Task<IActionResult> GetUsers([FromQuery]UserParams userParams) {
+
+            int currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            User userFromRepo = await _repo.GetUser(currentUserId);
+
+            userParams.UserId = currentUserId;
+
+            if (string.IsNullOrEmpty(userParams.Gender)) {
+                userParams.Gender = userFromRepo.Gender == "male" ? "female" : "male";
+            }
+
+            PagedList<User> users = await _repo.GetUsers(userParams);
             IEnumerable<UserForListDto> usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
+
+            Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
             return Ok(usersToReturn);
         }
         [HttpGet("{id}", Name="GetUser")]

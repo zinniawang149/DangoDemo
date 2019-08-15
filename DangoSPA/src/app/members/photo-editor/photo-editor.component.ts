@@ -58,7 +58,7 @@ export class PhotoEditorComponent implements OnInit {
     //    }
     //  }
     //}
-    this.uploader.onSuccessItem = this.onSuccessItem;
+    this.uploader.onSuccessItem = (item, response, status, headers) => this.onSuccessItem(item, response, status, headers);
   };
 
   setMainPhoto(photo: Photo) {
