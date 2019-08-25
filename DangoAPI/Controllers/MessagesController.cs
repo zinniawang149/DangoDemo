@@ -16,7 +16,6 @@ namespace DangoAPI.Controllers
 {
 
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [Route("api/users/{userId}/[controller]")]
     [ApiController]
     public class MessagesController : ControllerBase

@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace DangoAPI.Controllers
 {
     [ServiceFilter(typeof(LogUserActivity))]
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase

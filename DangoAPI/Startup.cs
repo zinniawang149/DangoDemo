@@ -21,6 +21,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using DangoAPI.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace DangoAPI
 {
@@ -42,20 +46,26 @@ namespace DangoAPI
             {
                 services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             }
-            else {
+            else
+            {
                 services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
             .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.IncludeIgnoredWarning)));
             }
-                
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            //services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
-            services.AddCors();
-            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
-            services.AddAutoMapper();
-            services.AddTransient<Seed>();
-            services.AddScoped<IAuthRepository, AuthRepository>();
-            services.AddScoped<IDatingRepository, DatingRepository>();
+            //Identity congig setup
+            IdentityBuilder builder = services.AddIdentityCore<User>(opt =>
+            {
+                //just for demo, using weak password
+                opt.Password.RequireDigit = false;
+                opt.Password.RequiredLength = 4;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequireUppercase = false;
+            });
+            builder = new IdentityBuilder(builder.UserType, typeof(Role), builder.Services);
+            builder.AddEntityFrameworkStores<DataContext>(); //means we using EF for our data store
+            builder.AddRoleValidator<RoleValidator<Role>>();
+            builder.AddRoleManager<RoleManager<Role>>();
+            builder.AddSignInManager<SignInManager<User>>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -66,11 +76,31 @@ namespace DangoAPI
                     ValidateAudience = false
                 };
             });
+
+            services.AddMvc(options =>
+            {
+                // add new filter policy for all controller, than we can remove all [Authorize] tag and add [AllowAnonymous] on controller which don't need authorize
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            //services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
+            services.AddCors();
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
+            if (_env.IsDevelopment())
+            {
+                Mapper.Reset();
+            }
+            services.AddAutoMapper();
+            services.AddTransient<Seed>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IDatingRepository, DatingRepository>();
+
             services.AddScoped<LogUserActivity>();
         }
-        
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env,Seed seeder)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder)
         {
             if (env.IsDevelopment())
             {
@@ -78,11 +108,14 @@ namespace DangoAPI
             }
             else
             {
-                app.UseExceptionHandler(builder=> {
-                    builder.Run(async context=> {
+                app.UseExceptionHandler(builder =>
+                {
+                    builder.Run(async context =>
+                    {
                         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                         IExceptionHandlerFeature error = context.Features.Get<IExceptionHandlerFeature>();
-                        if (error != null) {
+                        if (error != null)
+                        {
                             context.Response.AddApplicationError(error.Error.Message);
                             await context.Response.WriteAsync(error.Error.Message);
                         }
@@ -98,10 +131,11 @@ namespace DangoAPI
             app.UseAuthentication();
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            app.UseMvc(routes=> {
+            app.UseMvc(routes =>
+            {
                 routes.MapSpaFallbackRoute(
-                    name:"spa-fallback",
-                    defaults:new { controller="Fallback",action="Index"});
+                    name: "spa-fallback",
+                    defaults: new { controller = "Fallback", action = "Index" });
             });
         }
     }
