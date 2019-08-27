@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DangoAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
@@ -21,7 +20,7 @@ namespace DangoAPI.Controllers
             _context = context;
         }
         // GET api/values
-        [AllowAnonymous]
+        [Authorize(Roles ="Admin, Moderator")]
         [HttpGet]
         public async Task<IActionResult> GetValues()
         {
@@ -30,7 +29,7 @@ namespace DangoAPI.Controllers
         }
 
         // GET api/values/5
-        [AllowAnonymous]
+        [Authorize(Roles = "Member")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetValue(int id)
         {
