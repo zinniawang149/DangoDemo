@@ -93,3 +93,11 @@
     -webkit-box-shadow: 0 0 0 0.2rem rgba(120,194,173,0.25);
     box-shadow: 0 0 0 0.2rem rgba(120,194,173,0.25)
   }
+
+.btn-default {
+  color: black;
+}
+
+  .btn-default:hover {
+    color: gray;
+  }

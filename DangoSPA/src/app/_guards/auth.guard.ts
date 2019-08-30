@@ -10,12 +10,23 @@ import { AlertifyService } from '../_services/alertify.service';
 export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router, private alertify: AlertifyService) { }
 
-  canActivate(): boolean {
-    if (this.authService.loggedIn()) {
-      return true;
+  canActivate(next: ActivatedRouteSnapshot): boolean {
+    if (!this.authService.loggedIn()) {
+      this.alertify.error('You shall not pass!');
+      this.router.navigate(['/home']);
+      return false;
     }
-    this.alertify.error('You shall not pass!');
-    this.router.navigate(['/home']);
-    return false;
+
+    const roles = next.firstChild.data['roles'] as Array<string>;
+    if (roles) {
+      const match = this.authService.roleMatch(roles);
+      if (!match) {
+        this.router.navigate(['/members']);
+        this.alertify.error('You are not authorised to access this area!');
+        return false;
+      }
+    }
+
+    return true;
   }
 }
