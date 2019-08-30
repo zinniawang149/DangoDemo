@@ -8,6 +8,8 @@ using DangoAPI.Models;
 using System.Collections.Generic;
 using DangoAPI.Dtos;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using AutoMapper;
 
 namespace DangoAPI.Controllers
 {
@@ -17,11 +19,15 @@ namespace DangoAPI.Controllers
     {
         private readonly DataContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IDatingRepository _repo;
+        private readonly IMapper _mapper;
 
-        public AdminController(DataContext context, UserManager<User> userManager)
+        public AdminController(DataContext context, UserManager<User> userManager,IDatingRepository repo, IMapper mapper)
         {
             _context = context;
             _userManager = userManager;
+            _repo = repo;
+            _mapper = mapper;
         }
 
         [Authorize(Policy = "RequireAdminRole")] //Same name as AddAuthorization in Startup.cs
@@ -64,9 +70,26 @@ namespace DangoAPI.Controllers
 
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photosForModeration")]
-        public IActionResult GetPhotosForModeration()
+        public async Task<IActionResult> GetPhotosForModeration()
         {
-            return Ok("Admins or moderators can see this");
+            List<Photo> photos = await _repo.GetUnapprovedPhotosForModorator();
+            if (photos.Count == 0) return NotFound();
+            IEnumerable<PhotosForReturnToApprovedDto> photosToReturn = _mapper.Map<IEnumerable<PhotosForReturnToApprovedDto>>(photos);
+
+            return Ok(photosToReturn);
+        }
+
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpPost("approved/{photoId}")]
+        public async Task<IActionResult> SetApprovedPhoto(int photoId)
+        {
+            Photo photoFromRepo = await _repo.GetPhoto(photoId);
+            if (photoFromRepo == null) return BadRequest("This photo is not exist");
+
+            photoFromRepo.IsApproved = true;
+            if (await _repo.SaveAll()) return NoContent();
+
+            return BadRequest("Failed to approve the photo");
         }
     }
 }

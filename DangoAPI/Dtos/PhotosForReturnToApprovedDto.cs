@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace DangoAPI.Models
+namespace DangoAPI.Dtos
 {
-    public class Photo
+    public class PhotosForReturnToApprovedDto
     {
         public int Id { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }
         public DateTime DateAdded { get; set; }
         public bool IsMain { get; set; }
-        public string PublicId { get; set; }
-        public User User { get; set; }
-        public int UserId { get; set; }
-        public bool IsApproved { get; set; } = false;
+
+        public UserForListDto User { get; set; }
     }
 }

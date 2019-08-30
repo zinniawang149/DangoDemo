@@ -62,6 +62,8 @@ namespace DangoAPI.Data
                 .HasOne(u => u.Recipient)
                 .WithMany(u => u.MessageReceived)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved==true);
         }
     }
 }

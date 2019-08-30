@@ -80,6 +80,7 @@ namespace DangoAPI.Controllers
             Photo photo = _mapper.Map<Photo>(photosForCreationDto);
 
             if (!userFromRepo.Photos.Any(u => u.IsMain)) photo.IsMain = true;
+            photo.IsApproved = false;
 
             userFromRepo.Photos.Add(photo);
 
@@ -145,5 +146,8 @@ namespace DangoAPI.Controllers
             if (await _repo.SaveAll()) return Ok();
             return BadRequest("Failed to delete the photo");
         }
+
+
+       
     }
 }

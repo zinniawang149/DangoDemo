@@ -42,6 +42,10 @@ namespace DangoAPI.Data
             return photo;
         }
 
+        public async Task<List<Photo>> GetUnapprovedPhotosForModorator()
+        {
+            return await _context.Photos.IgnoreQueryFilters().Include(u=>u.User).OrderByDescending(d=>d.DateAdded).Where(p => p.IsApproved == false).ToListAsync();
+        }
         public async Task<User> GetUser(int id)
         {
             User user = await _context.Users.Include(p => p.Photos).FirstOrDefaultAsync(u => u.Id == id);
