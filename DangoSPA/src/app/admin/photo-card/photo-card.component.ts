@@ -10,7 +10,7 @@ import { AlertifyService } from '../../_services/alertify.service';
 
 export class PhotoCardComponent implements OnInit {
   @Input() photo;
-  @Output() photoChange = new EventEmitter<PhotoChange>();
+  @Output() photoChange = new EventEmitter();
   constructor(private adminService: AdminService, private alertify: AlertifyService) { }
 
   ngOnInit() {
