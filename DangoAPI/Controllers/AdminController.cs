@@ -10,6 +10,11 @@ using DangoAPI.Dtos;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using AutoMapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using DangoAPI.Helpers;
+using Microsoft.Extensions.Options;
+
 
 namespace DangoAPI.Controllers
 {
@@ -21,13 +26,24 @@ namespace DangoAPI.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IDatingRepository _repo;
         private readonly IMapper _mapper;
+        private readonly IOptions<CloudinarySettings> _cloudinaryConfig;
+        private Cloudinary _cloudinary;
 
-        public AdminController(DataContext context, UserManager<User> userManager,IDatingRepository repo, IMapper mapper)
+        public AdminController(DataContext context, UserManager<User> userManager,IDatingRepository repo, IMapper mapper, 
+            IOptions<CloudinarySettings> cloudinaryConfig)
         {
             _context = context;
             _userManager = userManager;
             _repo = repo;
             _mapper = mapper;
+            _cloudinaryConfig = cloudinaryConfig;
+
+            Account acc = new Account(
+          _cloudinaryConfig.Value.CloudName,
+          _cloudinaryConfig.Value.ApiKey,
+          _cloudinaryConfig.Value.ApiSecret
+          );
+            _cloudinary = new Cloudinary(acc);
         }
 
         [Authorize(Policy = "RequireAdminRole")] //Same name as AddAuthorization in Startup.cs
@@ -80,16 +96,44 @@ namespace DangoAPI.Controllers
         }
 
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPost("approved/{photoId}")]
+        [HttpPost("photo/approved/{photoId}")]
         public async Task<IActionResult> SetApprovedPhoto(int photoId)
         {
             Photo photoFromRepo = await _repo.GetPhoto(photoId);
             if (photoFromRepo == null) return BadRequest("This photo is not exist");
 
+            if (photoFromRepo.IsApproved == true) return BadRequest("This photo is already approved");
             photoFromRepo.IsApproved = true;
             if (await _repo.SaveAll()) return NoContent();
 
             return BadRequest("Failed to approve the photo");
+        }
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpDelete("photo/{photoId}")]
+        public async Task<IActionResult> DeletePhoto(int photoId)
+        {
+
+            Photo photoFromRepo = await _repo.GetPhoto(photoId);
+            if (photoFromRepo.IsMain) return BadRequest("You cannot delete the main photo");
+
+            if (photoFromRepo.PublicId != null)
+            {
+                DeletionParams deletionParams = new DeletionParams(photoFromRepo.PublicId);
+                DeletionResult deletionResult = _cloudinary.Destroy(deletionParams);
+
+                if (deletionResult.Result == "ok")
+                {
+                    _repo.Delete(photoFromRepo);
+                }
+            }
+
+            if (photoFromRepo.PublicId == null)
+            {
+                _repo.Delete(photoFromRepo);
+            }
+
+            if (await _repo.SaveAll()) return Ok();
+            return BadRequest("Failed to delete the photo");
         }
     }
 }

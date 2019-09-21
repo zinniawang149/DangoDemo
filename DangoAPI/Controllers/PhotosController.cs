@@ -13,6 +13,7 @@ using DangoAPI.Helpers;
 using DangoAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -25,10 +26,10 @@ namespace DangoAPI.Controllers
         private readonly IDatingRepository _repo;
         private readonly IMapper _mapper;
         private readonly IOptions<CloudinarySettings> _cloudinaryConfig;
-
         private Cloudinary _cloudinary;
 
-        public PhotosController(IDatingRepository repo, IMapper mapper, IOptions<CloudinarySettings> cloudinaryConfig)
+        public PhotosController(IDatingRepository repo, IMapper mapper,
+            IOptions<CloudinarySettings> cloudinaryConfig)
         {
             _repo = repo;
             _mapper = mapper;
@@ -40,6 +41,7 @@ namespace DangoAPI.Controllers
                 _cloudinaryConfig.Value.ApiSecret
                 );
             _cloudinary = new Cloudinary(acc);
+            
         }
 
         [HttpGet("{id}", Name = "GetPhoto")]
@@ -98,7 +100,7 @@ namespace DangoAPI.Controllers
         [HttpPost("{id}/setMain")]
         public async Task<IActionResult> SetMainPhoto(int userId, int id)
         {
-
+            
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
 
             User user = await _repo.GetUser(userId);
@@ -120,7 +122,9 @@ namespace DangoAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhoto(int userId, int id)
         {
-            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) {
+               return Unauthorized();
+            }
 
             User user = await _repo.GetUser(userId);
             if (!user.Photos.Any(p => p.Id == id)) return Unauthorized();
