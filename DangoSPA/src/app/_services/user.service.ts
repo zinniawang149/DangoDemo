@@ -19,6 +19,7 @@ export class UserService {
   getUsers(page?, itemPerPage?,userParams?,likesParam?): Observable<PaginatedResult<User[]>> {
     const paginatedResult: PaginatedResult<User[]> = new PaginatedResult<User[]>();
     let params = new HttpParams();
+    debugger;
     if (page != null && itemPerPage != null) {
       params = params.append('pageNumber', page);
       params = params.append('pageSize', itemPerPage);

@@ -52,7 +52,7 @@ namespace DangoAPI
             .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.IncludeIgnoredWarning)));
             }
 
-            //Identity congig setup
+            //Identity config setup
             IdentityBuilder builder = services.AddIdentityCore<User>(opt =>
             {
                 //just for demo, using weak password
